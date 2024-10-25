@@ -1,41 +1,24 @@
+// app/api/auth/[...nextauth]/route.ts
+
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { NextRequest, NextResponse } from 'next/server';
 
-const authOptions: NextAuthOptions = {
+// Define NextAuth options
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
-  // Additional NextAuth options
+  // Add additional NextAuth configuration options here (e.g., callbacks, session, etc.)
 };
 
-// Specify the runtime for Edge
-export const runtime = 'edge';
+// Specify the runtime to 'nodejs' to support Node.js-specific modules like 'crypto'
+export const runtime = 'nodejs';
 
-// Set up CORS headers manually
-function setCorsHeaders(response: NextResponse) {
-  response.headers.set("Access-Control-Allow-Origin", "https://notehive.pages.dev"); // Adjust to your frontend URL
-  response.headers.set("Access-Control-Allow-Methods", "GET, HEAD, POST");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
+// Create the NextAuth handler
+const handler = NextAuth(authOptions);
 
-// Export GET handler
-export async function GET(req: NextRequest) {
-  const response = NextResponse.next();
-  setCorsHeaders(response);
-
-  const authResponse = await NextAuth(authOptions)(req as any);
-  return NextResponse.next(authResponse);
-}
-
-// Export POST handler
-export async function POST(req: NextRequest) {
-  const response = NextResponse.next();
-  setCorsHeaders(response);
-
-  const authResponse = await NextAuth(authOptions)(req as any);
-  return NextResponse.next(authResponse);
-}
+// Export the handler for both GET and POST requests
+export { handler as GET, handler as POST };

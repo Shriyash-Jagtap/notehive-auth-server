@@ -1,30 +1,21 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { NextRequest, NextResponse } from "next/server"; // Import types
+import { NextRequest } from "next/server";
 
-// Specify Node.js runtime to support 'crypto'
-export const runtime = 'nodejs';
-
-// Define your NextAuth options
-export const authOptions: NextAuthOptions = {
+// Define NextAuth options without exporting them
+const authOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",  // Ensure these are set
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
-  // Add other NextAuth options as needed (callbacks, session, etc.)
+  // Additional NextAuth options, such as callbacks, can go here if needed
 };
 
-// Initialize NextAuth handler
-const handler = NextAuth(authOptions);
+// Configure runtime environment for the route
+export const runtime = 'nodejs';
 
-// Define GET handler with explicit types
-export const GET = async (req: NextRequest): Promise<NextResponse> => {
-  return handler(req);
-};
-
-// Define POST handler with explicit types
-export const POST = async (req: NextRequest): Promise<NextResponse> => {
-  return handler(req);
-};
+// Export GET and POST handlers directly
+export const GET = NextAuth(authOptions);
+export const POST = NextAuth(authOptions);

@@ -11,25 +11,22 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
-  // Additional NextAuth configuration options
   session: {
-    strategy: "jwt", // Using JWT strategy
+    strategy: "jwt", // Using JWT for session management
   },
   jwt: {
     secret: process.env.JWT_SECRET || "",
   },
   callbacks: {
-    async jwt({ token, account }) {
-      // Persist the OAuth access_token to the token right after signin
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      // Send properties to the client, like an access_token from a provider.
-      (session as any).accessToken = token.accessToken;
-      return session;
+    /**
+     * Redirect callback to control where users are sent after sign in/out.
+     */
+    async redirect({ url, baseUrl }) {
+      // Allow relative URLs or specific external URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allow URLs from the frontend domain
+      if (url.startsWith("https://notehive.pages.dev")) return url;
+      return baseUrl;
     },
   },
 };

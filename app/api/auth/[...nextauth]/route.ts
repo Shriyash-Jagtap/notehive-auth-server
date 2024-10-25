@@ -3,22 +3,22 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-// Define NextAuth options
-export const authOptions: NextAuthOptions = {
+// Configure NextAuth options without directly exporting them
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
-  // Add additional NextAuth configuration options here (e.g., callbacks, session, etc.)
+  // Additional NextAuth configuration options if needed
 };
 
-// Specify the runtime to 'nodejs' to support Node.js-specific modules like 'crypto'
+// Specify the runtime to ensure compatibility with Vercel
 export const runtime = 'nodejs';
 
-// Create the NextAuth handler
+// Create and export the NextAuth handler
 const handler = NextAuth(authOptions);
 
-// Export the handler for both GET and POST requests
+// Export the handler as GET and POST for route compatibility
 export { handler as GET, handler as POST };

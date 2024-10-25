@@ -1,31 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import Cors from 'cors';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 
-// Initialize the CORS middleware
-const cors = Cors({
-  methods: ['GET', 'HEAD', 'POST'],
-  origin: 'https://your-cloudflare-frontend.com', // Replace with your frontend's URL
-});
-
-// Helper function to run middleware with proper typing
-function runMiddleware(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  fn: (req: NextApiRequest, res: NextApiResponse, callback: (result: unknown) => void) => void
-): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: unknown) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
-    });
-  });
-}
-
-// Define NextAuth options
 const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -36,17 +12,30 @@ const authOptions: NextAuthOptions = {
   // Additional NextAuth options
 };
 
-// Specify the runtime for Node.js
-export const runtime = 'nodejs';
+// Specify the runtime for Edge
+export const runtime = 'edge';
+
+// Set up CORS headers manually
+function setCorsHeaders(response: NextResponse) {
+  response.headers.set("Access-Control-Allow-Origin", "https://notehive.pages.dev"); // Adjust to your frontend URL
+  response.headers.set("Access-Control-Allow-Methods", "GET, HEAD, POST");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
 
 // Export GET handler
-export const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  await runMiddleware(req, res, cors);
-  return NextAuth(authOptions)(req, res);
-};
+export async function GET(req: NextRequest) {
+  const response = NextResponse.next();
+  setCorsHeaders(response);
+
+  const authResponse = await NextAuth(authOptions)(req as any);
+  return NextResponse.next(authResponse);
+}
 
 // Export POST handler
-export const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  await runMiddleware(req, res, cors);
-  return NextAuth(authOptions)(req, res);
-};
+export async function POST(req: NextRequest) {
+  const response = NextResponse.next();
+  setCorsHeaders(response);
+
+  const authResponse = await NextAuth(authOptions)(req as any);
+  return NextResponse.next(authResponse);
+}

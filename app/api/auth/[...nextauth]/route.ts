@@ -1,7 +1,28 @@
+// app/api/auth/[...nextauth]/route.ts
+
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import Cors from 'cors';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-// Define NextAuth options without exporting them
+// Initialize the cors middleware
+const cors = Cors({
+  methods: ['GET', 'HEAD', 'POST'],
+  origin: 'https://your-cloudflare-frontend.com', // Replace with your frontend's URL
+});
+
+// Helper function to run middleware
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
+
 const authOptions = {
   providers: [
     GoogleProvider({
@@ -9,12 +30,17 @@ const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
-  // Additional NextAuth options, such as callbacks, can go here if needed
+  // Additional NextAuth options
 };
 
-// Configure runtime environment for the route
 export const runtime = 'nodejs';
 
-// Export GET and POST handlers directly
-export const GET = NextAuth(authOptions);
-export const POST = NextAuth(authOptions);
+export const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  await runMiddleware(req, res, cors);
+  return NextAuth(authOptions)(req, res);
+};
+
+export const POST = async (req: NextApiRequest, res: NextApiResponse) => {
+  await runMiddleware(req, res, cors);
+  return NextAuth(authOptions)(req, res);
+};
